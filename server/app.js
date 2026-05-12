@@ -6,6 +6,9 @@ import express from 'express';
 import { config } from './config/env.js';
 import { logger } from './utils/logger.js';
 import webhookRoutes from './routes/webhook.routes.js';
+import buildRoutes   from './routes/build.routes.js';
+import { buildQueue } from './services/buildQueue.js';
+import { runBuild }   from './services/buildRunner.js';
 
 const app = express();
 
@@ -21,6 +24,13 @@ app.get('/health', (_req, res) => {
 
 // Webhook endpoint — POST /webhook
 app.use('/webhook', webhookRoutes);
+
+// Build API — GET /api/builds, GET /api/builds/:id
+app.use('/api/builds', buildRoutes);
+
+// Wire the queue to the runner. Done here (not inside buildQueue.js) so
+// tests can inject a fake runner without touching the queue module.
+buildQueue.setRunner(runBuild);
 
 // 404 fallback (must come after all routes).
 app.use((req, res) => {
@@ -42,4 +52,6 @@ app.listen(config.port, () => {
   logger.info('Routes:');
   logger.info('  GET  /health');
   logger.info('  POST /webhook');
+  logger.info('  GET  /api/builds');
+  logger.info('  GET  /api/builds/:id');
 });
