@@ -2,6 +2,7 @@
 // Wires middleware, routes, error handlers, then starts listening.
 // Keep this file thin — real logic lives in services/.
 
+import http from 'node:http';
 import express from 'express';
 import { config } from './config/env.js';
 import { logger } from './utils/logger.js';
@@ -9,6 +10,7 @@ import webhookRoutes from './routes/webhook.routes.js';
 import buildRoutes   from './routes/build.routes.js';
 import { buildQueue } from './services/buildQueue.js';
 import { runBuild }   from './services/buildRunner.js';
+import { attachSocketIO } from './socket/io.js';
 
 const app = express();
 
@@ -47,11 +49,17 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'internal_error' });
 });
 
-app.listen(config.port, () => {
+// Create an explicit http.Server so Express and Socket.io can share a port.
+// `app.listen()` would create one implicitly — we need the handle to attach io.
+const httpServer = http.createServer(app);
+attachSocketIO(httpServer);
+
+httpServer.listen(config.port, () => {
   logger.info(`mini-cicd listening on http://localhost:${config.port}`);
   logger.info('Routes:');
   logger.info('  GET  /health');
   logger.info('  POST /webhook');
   logger.info('  GET  /api/builds');
   logger.info('  GET  /api/builds/:id');
+  logger.info('  WS   /socket.io  (events: subscribe, unsubscribe, log, status, snapshot)');
 });
