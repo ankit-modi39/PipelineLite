@@ -20,8 +20,13 @@ set +a
 
 PORT="${PORT:-4000}"
 SECRET="${SECRET:-$GITHUB_WEBHOOK_SECRET}"
+REF="${REF:-refs/heads/main}"
+COMMIT="${COMMIT:-abc123}"
+REPO="${REPO:-demo/repo}"
 
-PAYLOAD='{"ref":"refs/heads/main","repository":{"full_name":"demo/repo"},"head_commit":{"id":"abc123"}}'
+# Build the payload from env vars so REF/COMMIT/REPO overrides actually take effect.
+PAYLOAD=$(printf '{"ref":"%s","repository":{"full_name":"%s"},"head_commit":{"id":"%s"}}' \
+  "$REF" "$REPO" "$COMMIT")
 
 # Sign the *exact* bytes the server will see. printf '%s' avoids a trailing newline.
 SIG=$(printf '%s' "$PAYLOAD" \
