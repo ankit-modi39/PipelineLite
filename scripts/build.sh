@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-echo "================ mini-cicd build ================"
+echo "================ PipelineLite build ================"
 echo "  build id: ${BUILD_ID:-unset}"
 echo "  repo:     ${BUILD_REPO:-unset}"
 echo "  ref:      ${BUILD_REF:-unset}"

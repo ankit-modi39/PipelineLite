@@ -60,7 +60,7 @@ const httpServer = http.createServer(app);
 attachSocketIO(httpServer);
 
 httpServer.listen(config.port, () => {
-  logger.info(`mini-cicd listening on http://localhost:${config.port}`);
+  logger.info(`PipelineLite listening on http://localhost:${config.port}`);
   logger.info('Routes:');
   logger.info('  GET  /health');
   logger.info('  POST /webhook');

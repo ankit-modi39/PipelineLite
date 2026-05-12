@@ -21,12 +21,14 @@ set +a
 PORT="${PORT:-4000}"
 SECRET="${SECRET:-$GITHUB_WEBHOOK_SECRET}"
 REF="${REF:-refs/heads/main}"
-COMMIT="${COMMIT:-abc123}"
+COMMIT="${COMMIT:-}"
 REPO="${REPO:-demo/repo}"
+CLONE_URL="${CLONE_URL:-}"
 
-# Build the payload from env vars so REF/COMMIT/REPO overrides actually take effect.
-PAYLOAD=$(printf '{"ref":"%s","repository":{"full_name":"%s"},"head_commit":{"id":"%s"}}' \
-  "$REF" "$REPO" "$COMMIT")
+# Build the payload from env vars so overrides actually take effect.
+# `head_commit.id` may be empty — the runner will skip the checkout step.
+PAYLOAD=$(printf '{"ref":"%s","repository":{"full_name":"%s","clone_url":"%s"},"head_commit":{"id":"%s"}}' \
+  "$REF" "$REPO" "$CLONE_URL" "$COMMIT")
 
 # Sign the *exact* bytes the server will see. printf '%s' avoids a trailing newline.
 SIG=$(printf '%s' "$PAYLOAD" \

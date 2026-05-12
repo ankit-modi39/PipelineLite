@@ -53,7 +53,7 @@ function renderList(builds) {
       <div class="build-id">${esc(b.id)}</div>
       <div class="build-row">
         <span class="status ${esc(b.status)}">${esc(b.status)}</span>
-        <span class="build-ref">${esc(b.ref ?? '-')}</span>
+        <span class="build-ref">${esc(b.branch ?? b.ref ?? '-')}</span>
       </div>
     </li>
   `).join('');
@@ -95,7 +95,7 @@ function renderHeader(build) {
     <dl>
       <dt>Build:</dt>   <dd>${esc(build.id)}</dd>
       <dt>Repo:</dt>    <dd>${esc(build.repo ?? '-')}</dd>
-      <dt>Ref:</dt>     <dd>${esc(build.ref ?? '-')}</dd>
+      <dt>Branch:</dt>  <dd>${esc(build.branch ?? build.ref ?? '-')}</dd>
       <dt>Commit:</dt>  <dd>${esc(build.commit ?? '-')}</dd>
       <dt>Status:</dt>  <dd><span class="status ${esc(build.status)}">${esc(build.status)}</span>${exit}</dd>
       <dt>Started:</dt> <dd>${esc(build.startedAt ?? '-')}</dd>
