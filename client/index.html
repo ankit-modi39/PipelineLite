@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mini-cicd</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <h1>mini-cicd</h1>
+    <div id="queue-status">
+      queue: <span id="queue-depth">0</span>
+      &nbsp;/&nbsp;
+      active: <span id="queue-active">0</span>
+    </div>
+  </header>
+
+  <main>
+    <aside id="builds-pane">
+      <div class="pane-header">
+        <h2>Builds</h2>
+        <button id="refresh-btn" type="button">&#x21bb; refresh</button>
+      </div>
+      <ul id="builds-list">
+        <li class="empty">loading…</li>
+      </ul>
+    </aside>
+
+    <section id="detail-pane">
+      <div id="detail-header" class="empty">
+        Select a build from the left to view its log.
+      </div>
+      <pre id="log-output"></pre>
+    </section>
+  </main>
+
+  <!-- Socket.io browser client, served by the same server at this path. -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@
 // Keep this file thin — real logic lives in services/.
 
 import http from 'node:http';
+import path from 'node:path';
 import express from 'express';
 import { config } from './config/env.js';
 import { logger } from './utils/logger.js';
@@ -34,6 +35,10 @@ app.use('/api/builds', buildRoutes);
 // tests can inject a fake runner without touching the queue module.
 buildQueue.setRunner(runBuild);
 
+// Static dashboard. Must come AFTER the API routes (so /api/builds isn't
+// shadowed) but BEFORE the 404 handler. Serves client/index.html at '/'.
+app.use(express.static(path.resolve('client')));
+
 // 404 fallback (must come after all routes).
 app.use((req, res) => {
   res.status(404).json({ error: 'not_found', path: req.path });
@@ -61,5 +66,6 @@ httpServer.listen(config.port, () => {
   logger.info('  POST /webhook');
   logger.info('  GET  /api/builds');
   logger.info('  GET  /api/builds/:id');
+  logger.info('  GET  /            (dashboard)');
   logger.info('  WS   /socket.io  (events: subscribe, unsubscribe, log, status, snapshot)');
 });

@@ -1,0 +1,167 @@
+/* mini-cicd dashboard styles.
+   Single file, no framework. Variables at the top so theming is one-line changes. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d1117;
+  --panel:     #161b22;
+  --border:    #30363d;
+  --text:      #c9d1d9;
+  --text-dim:  #8b949e;
+  --accent:    #58a6ff;
+  --success:   #3fb950;
+  --failure:   #f85149;
+  --running:   #d29922;
+  --queued:    #8b949e;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+header h1 { font-size: 16px; color: var(--accent); }
+#queue-status {
+  font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-dim);
+}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+main { flex: 1; display: flex; min-height: 0; }
+
+aside#builds-pane {
+  width: 360px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+section#detail-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Pane header ──────────────────────────────────────────────── */
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.pane-header h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+}
+
+button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Build list ───────────────────────────────────────────────── */
+#builds-list { list-style: none; overflow-y: auto; flex: 1; }
+#builds-list li {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+#builds-list li:hover { background: rgba(56, 139, 253, 0.08); }
+#builds-list li.selected {
+  background: rgba(56, 139, 253, 0.15);
+  border-left: 3px solid var(--accent);
+  padding-left: 13px;
+}
+#builds-list li.empty {
+  color: var(--text-dim);
+  cursor: default;
+  font-style: italic;
+}
+
+.build-id {
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-dim);
+}
+.build-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.build-ref {
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-dim);
+}
+
+/* ── Status pills ─────────────────────────────────────────────── */
+.status {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+.status.queued  { background: rgba(139,148,158,0.20); color: var(--queued);  }
+.status.running { background: rgba(210,153,34,0.20); color: var(--running);
+                  animation: pulse 1.5s ease-in-out infinite; }
+.status.success { background: rgba(63,185,80,0.20);  color: var(--success); }
+.status.failure { background: rgba(248,81,73,0.20);  color: var(--failure); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+/* ── Detail pane ──────────────────────────────────────────────── */
+#detail-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+#detail-header.empty {
+  color: var(--text-dim);
+  font-style: italic;
+}
+#detail-header dl {
+  display: grid;
+  grid-template-columns: 80px auto;
+  gap: 4px 14px;
+  font-size: 13px;
+}
+#detail-header dt { color: var(--text-dim); }
+#detail-header dd { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+#log-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
