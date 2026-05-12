@@ -67,10 +67,19 @@ export const runBuild = (buildId) => new Promise((resolve) => {
     child.kill('SIGKILL');
   }, BUILD_TIMEOUT_MS);
 
+  // Helper: keep the file and live stream byte-identical by writing the
+  // runner's epilogue line through both paths.
+  const writeEpilogue = (text) => {
+    logStream.end(text);
+    buildEvents.emit('log', {
+      buildId, stream: 'runner', chunk: text, ts: Date.now(),
+    });
+  };
+
   // ── spawn-level failure (e.g. script not found, not executable) ────
   child.on('error', (err) => {
     clearTimeout(killTimer);
-    logStream.end(`\n[runner] spawn error: ${err.message}\n`);
+    writeEpilogue(`\n[runner] spawn error: ${err.message}\n`);
     const endedAt = new Date().toISOString();
     buildStore.update(buildId, {
       status: 'failure', endedAt, exitCode: -1, errorMessage: err.message,
@@ -83,7 +92,7 @@ export const runBuild = (buildId) => new Promise((resolve) => {
   // ── normal exit ────────────────────────────────────────────────────
   child.on('close', (code, signal) => {
     clearTimeout(killTimer);
-    logStream.end(`\n[runner] exit code: ${code}${signal ? ` (signal ${signal})` : ''}\n`);
+    writeEpilogue(`\n[runner] exit code: ${code}${signal ? ` (signal ${signal})` : ''}\n`);
     const endedAt = new Date().toISOString();
     const status  = code === 0 ? 'success' : 'failure';
     buildStore.update(buildId, { status, endedAt, exitCode: code });
