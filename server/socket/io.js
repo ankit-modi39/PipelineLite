@@ -23,6 +23,7 @@ import { Server } from 'socket.io';
 import { logger } from '../utils/logger.js';
 import { buildStore } from '../services/buildStore.js';
 import { buildEvents } from '../services/buildEvents.js';
+import { isAuthorizedReq } from '../middleware/basicAuth.js';
 
 const BUILDS_DIR = path.resolve('server/builds');
 const BUILD_ID_RE = /^b_[A-Za-z0-9_-]+$/;   // same shape generateBuildId() emits
@@ -31,9 +32,17 @@ const roomFor = (buildId) => `build:${buildId}`;
 
 export const attachSocketIO = (httpServer) => {
   const io = new Server(httpServer, {
-    // Step 5 will serve the client from this same origin (no CORS needed),
-    // but for now '*' lets dev tools and tests connect from anywhere.
     cors: { origin: '*', methods: ['GET', 'POST'] },
+
+    // Gate the handshake with the same credentials as the dashboard.
+    // Express middleware doesn't fire for raw Socket.io upgrades, so we
+    // re-use the same predicate here. allowRequest runs synchronously on
+    // every handshake (HTTP-long-poll handshake and WS upgrade alike).
+    allowRequest: (req, cb) => {
+      if (isAuthorizedReq(req)) return cb(null, true);
+      // Returning a non-null first arg + false makes Socket.io respond with 401.
+      cb('unauthorized', false);
+    },
   });
 
   // ── Server-side bus → Socket.io fan-out ────────────────────────────

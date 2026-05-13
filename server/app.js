@@ -12,6 +12,7 @@ import buildRoutes   from './routes/build.routes.js';
 import { buildQueue } from './services/buildQueue.js';
 import { runBuild }   from './services/buildRunner.js';
 import { attachSocketIO } from './socket/io.js';
+import { basicAuth, logoutHandler } from './middleware/basicAuth.js';
 
 const app = express();
 
@@ -26,7 +27,15 @@ app.get('/health', (_req, res) => {
 });
 
 // Webhook endpoint — POST /webhook
+// (Open: GitHub authenticates via HMAC, not Basic Auth.)
 app.use('/webhook', webhookRoutes);
+
+// ── Everything below this line requires Basic Auth (when enabled) ──
+// Order matters: /health and /webhook must be exempt; this line is the gate.
+app.use(basicAuth);
+
+// Logout — sits AFTER basicAuth so only authenticated clients can trigger it.
+app.get('/logout', logoutHandler);
 
 // Build API — GET /api/builds, GET /api/builds/:id
 app.use('/api/builds', buildRoutes);
@@ -68,4 +77,5 @@ httpServer.listen(config.port, () => {
   logger.info('  GET  /api/builds/:id');
   logger.info('  GET  /            (dashboard)');
   logger.info('  WS   /socket.io  (events: subscribe, unsubscribe, log, status, snapshot)');
+  logger.info(`  auth: ${config.authEnabled ? 'enabled' : 'DISABLED (dev)'}`);
 });

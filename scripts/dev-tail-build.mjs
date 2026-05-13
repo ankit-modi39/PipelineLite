@@ -18,7 +18,21 @@ if (!buildId) {
 }
 
 const URL = process.env.URL ?? 'http://localhost:4000';
-const socket = ioClient(URL, { reconnectionAttempts: 3 });
+
+// If the dashboard is auth-protected, set DASHBOARD_USER + DASHBOARD_PASSWORD
+// in the environment and they'll be sent on the Socket.io handshake.
+const authHeaders = {};
+if (process.env.DASHBOARD_USER && process.env.DASHBOARD_PASSWORD) {
+  const token = Buffer.from(
+    `${process.env.DASHBOARD_USER}:${process.env.DASHBOARD_PASSWORD}`,
+  ).toString('base64');
+  authHeaders.Authorization = `Basic ${token}`;
+}
+
+const socket = ioClient(URL, {
+  reconnectionAttempts: 3,
+  extraHeaders: authHeaders,
+});
 
 const TERMINAL = new Set(['success', 'failure']);
 

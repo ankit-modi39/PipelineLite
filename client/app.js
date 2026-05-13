@@ -17,6 +17,7 @@ const $ = (sel) => document.querySelector(sel);
 const els = {
   list:    $('#builds-list'),
   refresh: $('#refresh-btn'),
+  logout:  $('#logout-btn'),
   qDepth:  $('#queue-depth'),
   qActive: $('#queue-active'),
   header:  $('#detail-header'),
@@ -138,6 +139,21 @@ els.output.addEventListener('scroll', () => {
                  >= els.output.scrollHeight - 4;
   stickToBottom = atBottom;
 });
+
+// ── Logout (Basic Auth has no native logout) ───────────────────────
+async function doLogout() {
+  // /logout returns 401 with Clear-Site-Data — modern browsers wipe
+  // the HTTP auth cache for this origin in response.
+  try {
+    await fetch('/logout', { cache: 'no-store' });
+  } catch { /* expected: 401 */ }
+
+  // Force a fresh navigation so the browser issues a new request to /
+  // and (with creds cleared) gets the 401 + WWW-Authenticate challenge.
+  // The `?_=…` cache-buster avoids any stubborn cached HTML.
+  location.replace('/?signed_out=' + Date.now());
+}
+els.logout.addEventListener('click', doLogout);
 
 // ── Bootstrap ──────────────────────────────────────────────────────
 els.refresh.addEventListener('click', refreshBuilds);

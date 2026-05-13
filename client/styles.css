@@ -36,6 +36,11 @@ header {
   border-bottom: 1px solid var(--border);
 }
 header h1 { font-size: 16px; color: var(--accent); }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 #queue-status {
   font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
   color: var(--text-dim);
