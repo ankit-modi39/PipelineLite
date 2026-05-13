@@ -4,11 +4,8 @@ A self-hosted mini CI/CD server in Node.js — webhook-triggered builds with
 real-time log streaming, branch filtering, and a per-build workspace clone.
 Think "GitHub Actions, rebuilt from first principles to understand the internals."
 
-**[Live demo](https://<your-render-url>)** &nbsp;·&nbsp;
-**[60-second walkthrough](https://<your-video-url>)** &nbsp;·&nbsp;
-**[Source](https://github.com/<your-username>/pipelinelite)**
 
-![PipelineLite dashboard — live log streaming](docs/screenshot-dashboard.png)
+
 
 ---
 
