@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pipelinelite-demo
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true"
+      - key: GITHUB_WEBHOOK_SECRET
+        generateValue: true
