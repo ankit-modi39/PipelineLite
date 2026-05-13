@@ -41,6 +41,7 @@ const parseHeader = (header) => {
 };
 
 export const isAuthorizedReq = (req) => {
+  if (config.demoMode)    return true;             // public demo — no auth
   if (!config.authEnabled) return true;            // auth disabled in dev
   const creds = parseHeader(req.headers?.authorization);
   if (!creds) return false;

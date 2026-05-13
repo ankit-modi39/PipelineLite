@@ -96,44 +96,54 @@ export const runBuild = async (buildId) => {
   let errorMessage = null;
 
   try {
-    // ── 1. clone ─────────────────────────────────────────────────
-    if (!build.cloneUrl) {
-      throw new Error('build has no cloneUrl (repository.clone_url missing in payload)');
-    }
-    emitRunnerLine(buildId, logStream,
-      `\n[runner] git clone ${build.cloneUrl}\n`);
-    await spawnStep({
-      buildId, logStream,
-      cmd: 'git',
-      args: ['clone', '--progress', build.cloneUrl, workspace],
-      onSpawn: (c) => { currentChild = c; },
-    });
+    let scriptPath;
 
-    // ── 2. checkout (only if a specific commit was named) ────────
-    if (build.commit) {
+    if (build.kind === 'demo') {
+      // Demo build: no clone, no checkout. Just run the fallback script
+      // in a fresh empty workspace so the runner has a sensible cwd.
+      fs.mkdirSync(workspace, { recursive: true });
+      scriptPath = FALLBACK_SCRIPT;
       emitRunnerLine(buildId, logStream,
-        `[runner] git checkout ${build.commit}\n`);
+        `\n[runner] demo build — no clone; running fallback script\n`);
+    } else {
+      // ── 1. clone ─────────────────────────────────────────────────
+      if (!build.cloneUrl) {
+        throw new Error('build has no cloneUrl (repository.clone_url missing in payload)');
+      }
+      emitRunnerLine(buildId, logStream,
+        `\n[runner] git clone ${build.cloneUrl}\n`);
       await spawnStep({
         buildId, logStream,
         cmd: 'git',
-        args: ['checkout', '--quiet', build.commit],
-        opts: { cwd: workspace },
+        args: ['clone', '--progress', build.cloneUrl, workspace],
         onSpawn: (c) => { currentChild = c; },
       });
-    }
 
-    // ── 3. choose pipeline script ────────────────────────────────
-    const repoScript = path.join(workspace, 'pipeline.sh');
-    let scriptPath;
-    if (fs.existsSync(repoScript)) {
-      try { fs.chmodSync(repoScript, 0o755); } catch { /* ok */ }
-      scriptPath = repoScript;
-      emitRunnerLine(buildId, logStream,
-        `[runner] using pipeline.sh from cloned repo\n`);
-    } else {
-      scriptPath = FALLBACK_SCRIPT;
-      emitRunnerLine(buildId, logStream,
-        `[runner] no pipeline.sh in repo, using PipelineLite default script\n`);
+      // ── 2. checkout (only if a specific commit was named) ──────
+      if (build.commit) {
+        emitRunnerLine(buildId, logStream,
+          `[runner] git checkout ${build.commit}\n`);
+        await spawnStep({
+          buildId, logStream,
+          cmd: 'git',
+          args: ['checkout', '--quiet', build.commit],
+          opts: { cwd: workspace },
+          onSpawn: (c) => { currentChild = c; },
+        });
+      }
+
+      // ── 3. choose pipeline script ──────────────────────────────
+      const repoScript = path.join(workspace, 'pipeline.sh');
+      if (fs.existsSync(repoScript)) {
+        try { fs.chmodSync(repoScript, 0o755); } catch { /* ok */ }
+        scriptPath = repoScript;
+        emitRunnerLine(buildId, logStream,
+          `[runner] using pipeline.sh from cloned repo\n`);
+      } else {
+        scriptPath = FALLBACK_SCRIPT;
+        emitRunnerLine(buildId, logStream,
+          `[runner] no pipeline.sh in repo, using PipelineLite default script\n`);
+      }
     }
 
     // ── 4. run the script (cwd = workspace, env carries metadata) ─
