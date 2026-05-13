@@ -18,6 +18,8 @@ const els = {
   list:    $('#builds-list'),
   refresh: $('#refresh-btn'),
   logout:  $('#logout-btn'),
+  runDemo: $('#run-demo-btn'),
+  banner:  $('#demo-banner'),
   qDepth:  $('#queue-depth'),
   qActive: $('#queue-active'),
   header:  $('#detail-header'),
@@ -39,6 +41,12 @@ async function refreshBuilds() {
     renderList(data.builds);
     els.qDepth.textContent  = data.queue.depth;
     els.qActive.textContent = data.queue.active;
+
+    // Toggle demo-mode UI based on server response.
+    const demo = !!data.meta?.demoMode;
+    els.banner.hidden   = !demo;
+    els.runDemo.hidden  = !demo;
+    els.logout.hidden   = demo;   // no auth in demo mode → no logout
   } catch (err) {
     console.error('refreshBuilds failed', err);
   }
@@ -139,6 +147,28 @@ els.output.addEventListener('scroll', () => {
                  >= els.output.scrollHeight - 4;
   stickToBottom = atBottom;
 });
+
+// ── Demo build trigger ─────────────────────────────────────────────
+async function runDemoBuild() {
+  els.runDemo.disabled = true;
+  try {
+    const res = await fetch('/api/demo/build', { method: 'POST' });
+    if (res.status === 429) {
+      alert('Demo queue is full. Try again in a few seconds.');
+      return;
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { buildId } = await res.json();
+    await refreshBuilds();
+    selectBuild(buildId);          // immediately tail the new build
+  } catch (err) {
+    console.error('runDemoBuild failed', err);
+    alert('Could not start a demo build. Check the server log.');
+  } finally {
+    els.runDemo.disabled = false;
+  }
+}
+els.runDemo.addEventListener('click', runDemoBuild);
 
 // ── Logout (Basic Auth has no native logout) ───────────────────────
 async function doLogout() {

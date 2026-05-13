@@ -13,6 +13,8 @@ import { buildQueue } from './services/buildQueue.js';
 import { runBuild }   from './services/buildRunner.js';
 import { attachSocketIO } from './socket/io.js';
 import { basicAuth, logoutHandler } from './middleware/basicAuth.js';
+import demoRoutes from './routes/demo.routes.js';
+import { seedDemoBuilds } from './services/demoSeeder.js';
 
 const app = express();
 
@@ -39,6 +41,10 @@ app.get('/logout', logoutHandler);
 
 // Build API — GET /api/builds, GET /api/builds/:id
 app.use('/api/builds', buildRoutes);
+
+// Demo-mode-only routes — the controller returns 404 when DEMO_MODE is off,
+// so it's safe to mount unconditionally.
+app.use('/api/demo', demoRoutes);
 
 // Wire the queue to the runner. Done here (not inside buildQueue.js) so
 // tests can inject a fake runner without touching the queue module.
@@ -68,6 +74,10 @@ app.use((err, _req, res, _next) => {
 const httpServer = http.createServer(app);
 attachSocketIO(httpServer);
 
+// Seed demo builds if requested. Runs after the queue/runner wiring above
+// so the seeded log files exist before the first dashboard request arrives.
+if (config.demoMode) seedDemoBuilds();
+
 httpServer.listen(config.port, () => {
   logger.info(`PipelineLite listening on http://localhost:${config.port}`);
   logger.info('Routes:');
@@ -78,4 +88,5 @@ httpServer.listen(config.port, () => {
   logger.info('  GET  /            (dashboard)');
   logger.info('  WS   /socket.io  (events: subscribe, unsubscribe, log, status, snapshot)');
   logger.info(`  auth: ${config.authEnabled ? 'enabled' : 'DISABLED (dev)'}`);
+  if (config.demoMode) logger.info('  DEMO MODE active — auth bypassed, /api/demo/build enabled');
 });

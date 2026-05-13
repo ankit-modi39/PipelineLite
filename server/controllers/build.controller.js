@@ -3,6 +3,7 @@
 
 import { buildStore } from '../services/buildStore.js';
 import { buildQueue } from '../services/buildQueue.js';
+import { config } from '../config/env.js';
 
 export const listBuilds = async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 50, 200);
@@ -10,6 +11,7 @@ export const listBuilds = async (req, res) => {
   res.json({
     builds,
     queue: buildQueue.status(),
+    meta:  { demoMode: config.demoMode },
   });
 };
 

@@ -15,11 +15,22 @@
         &nbsp;/&nbsp;
         active: <span id="queue-active">0</span>
       </div>
+      <button id="run-demo-btn" type="button" hidden
+              title="Trigger a real build (no GitHub needed)">
+        &#9658; run a demo build
+      </button>
       <button id="logout-btn" type="button" title="Sign out of the dashboard">
         sign out
       </button>
     </div>
   </header>
+
+  <div id="demo-banner" hidden>
+    <strong>Demo instance.</strong>
+    Read-only public dashboard. Click <em>"run a demo build"</em> above to
+    watch a real build clone, queue, and stream logs in real time. Auth is
+    disabled here; the production version is gated by HTTP Basic Auth.
+  </div>
 
   <main>
     <aside id="builds-pane">

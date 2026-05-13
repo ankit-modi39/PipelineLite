@@ -47,12 +47,21 @@ export const config = Object.freeze({
   authEnabled,
   dashboardUser,
   dashboardPassword,
+
+  // Demo mode: seeds builds, disables auth, exposes /api/demo/build.
+  // Intended for public-facing portfolio demos. Never use in production
+  // alongside real webhooks.
+  demoMode: (process.env.DEMO_MODE ?? '').toLowerCase() === 'true',
 });
 
-if (!authEnabled && (process.env.NODE_ENV ?? 'development') !== 'development') {
-  // In any non-dev environment, refuse to start without credentials.
+if (!authEnabled && !config.demoMode &&
+    (process.env.NODE_ENV ?? 'development') !== 'development') {
+  // In any non-dev environment, refuse to start without credentials —
+  // unless DEMO_MODE is explicitly on, in which case the open dashboard
+  // is the intended state.
   throw new Error(
     'Dashboard auth is disabled but NODE_ENV != development. ' +
-    'Set DASHBOARD_USER and DASHBOARD_PASSWORD.',
+    'Set DASHBOARD_USER and DASHBOARD_PASSWORD, ' +
+    'or set DEMO_MODE=true for an intentionally open public demo.',
   );
 }
